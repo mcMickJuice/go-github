@@ -7,31 +7,15 @@ import (
 	"net/http"
 )
 
-// curl -L \
-//   -H "Accept: application/vnd.github+json" \
-//   -H "Authorization: Bearer <YOUR-TOKEN>" \
-//   -H "X-GitHub-Api-Version: 2022-11-28" \
-//   https://api.github.com/orgs/ORG/repos
-
-type SearchResponse struct {
+type SearchResponse[I any] struct {
 	TotalCount int `json:"total_count"`
-}
-
-type SearchRepoResponse struct {
-	SearchResponse
-	Items []SearchRepoResponseItem `json:"items"`
+	Items      []I `json:"items"`
 }
 
 type SearchRepoResponseItem struct {
 	Id     int    `json:"id"`
 	NodeId string `json:"node_id"`
 	Name   string `json:"name"`
-}
-
-// can I use generics?
-type SearchPullRequestResponse struct {
-	SearchResponse
-	Items []SearchPullRequestResponseItem `json:"items"`
 }
 
 type SearchPullRequestResponseItem struct {
@@ -71,7 +55,7 @@ func (c GithubClient) fetch(path string, method string, data interface{}) error 
 // fetch all repos available to user
 func (c GithubClient) FetchRepos() ([]string, error) {
 	path := "/search/repositories?q=org:shipt+segway+in:name&per_page=30"
-	repoResponse := &SearchRepoResponse{}
+	repoResponse := &SearchResponse[SearchRepoResponseItem]{}
 
 	if err := c.fetch(path, http.MethodGet, repoResponse); err != nil {
 		return nil, err
@@ -85,8 +69,8 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 }
 
 func (c GithubClient) FetchContributions(user, sinceDate string) ([]SearchPullRequestResponseItem, error) {
-  path := fmt.Sprintf("/search/issues?q=is:pr+repo:shipt/segway-next+author:%s+created:>%s", user, sinceDate)
-	searchResponse := &SearchPullRequestResponse{}
+	path := fmt.Sprintf("/search/issues?q=is:pr+repo:shipt/segway-next+author:%s+created:>%s", user, sinceDate)
+	searchResponse := &SearchResponse[SearchPullRequestResponseItem]{}
 	if err := c.fetch(path, http.MethodGet, searchResponse); err != nil {
 		return nil, err
 	}
