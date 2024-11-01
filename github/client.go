@@ -32,8 +32,8 @@ func NewGithubClient(token, baseUrl string) GithubClient {
 	return GithubClient{token, baseUrl}
 }
 
-func (c GithubClient) fetch(url string, method string, data interface{}) error {
-
+func (c GithubClient) fetch(path string, method string, data interface{}) error {
+	url := fmt.Sprintf("%s%s", c.baseUrl, path)
 	request, _ := http.NewRequest(method, url, nil)
 	client := &http.Client{}
 	request.Header.Add("X-GitHub-Api-Version", "2022-11-28")
@@ -55,10 +55,10 @@ func (c GithubClient) fetch(url string, method string, data interface{}) error {
 
 // fetch all repos available to user
 func (c GithubClient) FetchRepos() ([]string, error) {
-  url := fmt.Sprintf("%s/search/repositories?q=org:shipt+segway+in:name&per_page=30", c.baseUrl)
+	path := "/search/repositories?q=org:shipt+segway+in:name&per_page=30"
 	repoResponse := &SearchRepoResponse{}
 
-	if err := c.fetch(url, http.MethodGet, repoResponse); err != nil {
+	if err := c.fetch(path, http.MethodGet, repoResponse); err != nil {
 		return nil, err
 	}
 	fmt.Printf("Total Count: %d\n", repoResponse.TotalCount)
