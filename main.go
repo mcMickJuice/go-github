@@ -17,13 +17,13 @@ func main() {
 		return
 	}
 	client := github.NewGithubClient(token, rootApiUrl)
-	prs, err := client.FetchContributions("mcMickJuice", "2024-08-01")
+	prOverview, err := client.FetchContributions("mcMickJuice", "2024-08-01")
 
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 	}
 
-  fmt.Printf("PRs: %v\n", prs)
+  fmt.Printf("PRs: %v\n", prOverview)
 
 	fmt.Println("Program has completed")
 }

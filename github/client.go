@@ -19,8 +19,9 @@ type SearchRepoResponseItem struct {
 }
 
 type SearchPullRequestResponseItem struct {
-	Title  string `json:"title"`
-	Number int    `json:"number"`
+	Title     string `json:"title"`
+	Number    int    `json:"number"`
+	CreatedAt string `json:"created_at"`
 }
 
 type GithubClient struct {
@@ -68,12 +69,26 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 	return repoNames, nil
 }
 
-func (c GithubClient) FetchContributions(user, sinceDate string) ([]SearchPullRequestResponseItem, error) {
+type PullRequestResult struct {
+	Title string
+	Date  string
+}
+
+type PullRequestReviewOverview struct {
+	PullRequests []PullRequestResult
+	// Reviews      []PullRequestResult
+}
+
+func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestReviewOverview, error) {
 	path := fmt.Sprintf("/search/issues?q=is:pr+repo:shipt/segway-next+author:%s+created:>%s", user, sinceDate)
 	searchResponse := &SearchResponse[SearchPullRequestResponseItem]{}
+	overview := PullRequestReviewOverview{}
 	if err := c.fetch(path, http.MethodGet, searchResponse); err != nil {
-		return nil, err
+		return overview, err
 	}
-	fmt.Printf("Total Count: %d\n", searchResponse.TotalCount)
-	return searchResponse.Items, nil
+	for _, item := range searchResponse.Items {
+		overview.PullRequests = append(overview.PullRequests, PullRequestResult{item.Title, item.CreatedAt})
+	}
+
+	return overview, nil
 }
