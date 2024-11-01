@@ -55,7 +55,7 @@ func (c GithubClient) fetch(url string, method string, data interface{}) error {
 
 // fetch all repos available to user
 func (c GithubClient) FetchRepos() ([]string, error) {
-  url := fmt.Sprintf("%s/search/repositories?q=org:shipt&per_page=30", c.baseUrl)
+  url := fmt.Sprintf("%s/search/repositories?q=org:shipt+segway+in:name&per_page=30", c.baseUrl)
 	repoResponse := &SearchRepoResponse{}
 
 	if err := c.fetch(url, http.MethodGet, repoResponse); err != nil {
@@ -67,4 +67,8 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 		repoNames = append(repoNames, repo.Name)
 	}
 	return repoNames, nil
+}
+
+func (c GithubClient) FetchContributions(user string) error {
+	return nil
 }
