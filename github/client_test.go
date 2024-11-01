@@ -18,6 +18,10 @@ func TestClient(t *testing.T) {
 			if r.URL.Path != repoPath {
 				t.Errorf("Expected path %s, Got path %s", repoPath, r.URL.Path)
 			}
+
+			if authHeader := r.Header.Get("Authorization"); authHeader != "Bearer token" {
+				t.Errorf("Expected Header: %q, got %q", "Bearer token", authHeader)
+			}
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(searchRepoJson))
 		}))

@@ -26,7 +26,7 @@ type SearchRepoResponseItem struct {
 
 // fetch all repos available to user
 func FetchRepos(baseUrl, token string) ([]string, error) {
-  url := fmt.Sprintf("%s/search/repositories", baseUrl)
+  url := fmt.Sprintf("%s/search/repositories?q=org:shipt", baseUrl)
 	request, _ := http.NewRequest(http.MethodGet, url, nil)
 	client := &http.Client{}
 	request.Header.Add("X-GitHub-Api-Version", "2022-11-28")
