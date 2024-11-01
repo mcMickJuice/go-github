@@ -13,8 +13,6 @@ import (
 //   -H "X-GitHub-Api-Version: 2022-11-28" \
 //   https://api.github.com/orgs/ORG/repos
 
-const rootApiUrl = "https://api.github.com"
-
 type RepoResponse struct {
 	Id     int    `json:"id"`
 	NodeId string `json:"node_id"`
@@ -22,10 +20,13 @@ type RepoResponse struct {
 }
 
 // fetch all repos available to user
-func FetchRepos() ([]string, error) {
-	resp, err := http.Get(fmt.Sprintf("%s/orgs/shipt/repos", rootApiUrl))
+func FetchRepos(baseUrl string) ([]string, error) {
+	url := fmt.Sprintf("%s/orgs/shipt/repos", baseUrl)
+	request, _ := http.NewRequest(http.MethodGet, url, nil)
+	client := &http.Client{}
+	resp, err := client.Do(request)
 	defer resp.Body.Close()
-	if err != nil {
+	if err != nil || resp.StatusCode != 200 {
 		return nil, err
 	}
 	body, err := io.ReadAll(resp.Body)
