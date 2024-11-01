@@ -76,18 +76,30 @@ type PullRequestResult struct {
 
 type PullRequestReviewOverview struct {
 	PullRequests []PullRequestResult
-	// Reviews      []PullRequestResult
+	Reviews      []PullRequestResult
 }
 
 func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestReviewOverview, error) {
-	path := fmt.Sprintf("/search/issues?q=is:pr+repo:shipt/segway-next+author:%s+created:>%s", user, sinceDate)
-	searchResponse := &SearchResponse[SearchPullRequestResponseItem]{}
+	prPath := fmt.Sprintf("/search/issues?per_page=100&q=is:pr+repo:shipt/segway-next+author:%s+created:>%s", user, sinceDate)
+	prSearchResponse := &SearchResponse[SearchPullRequestResponseItem]{}
+
+  // this looks to be pulled in PRs where I leave comments...
+  reviewPath := fmt.Sprintf("/search/issues?per_page=100&q=is:pr+repo:shipt/segway-next+reviewed-by:%s+-author:%s+created:>%s", user, user, sinceDate)
+	reviewSearchResponse := &SearchResponse[SearchPullRequestResponseItem]{}
+
 	overview := PullRequestReviewOverview{}
-	if err := c.fetch(path, http.MethodGet, searchResponse); err != nil {
+  // parallelize this
+	if err := c.fetch(prPath, http.MethodGet, prSearchResponse); err != nil {
 		return overview, err
 	}
-	for _, item := range searchResponse.Items {
+	if err := c.fetch(reviewPath, http.MethodGet, reviewSearchResponse); err != nil {
+		return overview, err
+	}
+	for _, item := range prSearchResponse.Items {
 		overview.PullRequests = append(overview.PullRequests, PullRequestResult{item.Title, item.CreatedAt})
+	}
+	for _, item := range reviewSearchResponse.Items {
+		overview.Reviews = append(overview.Reviews, PullRequestResult{item.Title, item.CreatedAt})
 	}
 
 	return overview, nil

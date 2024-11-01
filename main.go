@@ -9,6 +9,7 @@ import (
 const rootApiUrl = "https://api.github.com"
 const apiTokenName = "GITHUB_READ_API_TOKEN"
 
+// TODO - parallelize search calls, accept contributor and since Date, github query builder
 func main() {
 	fmt.Println("Calling Github...")
 	token, exists := os.LookupEnv(apiTokenName)
@@ -17,13 +18,13 @@ func main() {
 		return
 	}
 	client := github.NewGithubClient(token, rootApiUrl)
-	prOverview, err := client.FetchContributions("mcMickJuice", "2024-08-01")
+	prOverview, err := client.FetchContributions("dcheng1290", "2024-08-01")
 
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 	}
 
-  fmt.Printf("PRs: %v\n", prOverview)
+	fmt.Printf("PR Count: %d\nReview Count: %d\n", len(prOverview.PullRequests), len(prOverview.Reviews))
 
 	fmt.Println("Program has completed")
 }
