@@ -16,16 +16,15 @@ func main() {
 		fmt.Printf("Error: %s not found", apiTokenName)
 		return
 	}
-	repoNames, err := github.FetchRepos(rootApiUrl, token)
+	client := github.NewGithubClient(token, rootApiUrl)
+	repoNames, err := client.FetchRepos()
 
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 	}
-  fmt.Printf("Repo Count: %d\n", len(repoNames))
 	for _, name := range repoNames {
 		fmt.Println(name)
 	}
-
 
 	fmt.Println("Program has completed")
 }

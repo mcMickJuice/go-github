@@ -27,8 +27,9 @@ func TestClient(t *testing.T) {
 		}))
 		defer server.Close()
 
+    client := NewGithubClient("token", server.URL)
 		want := []string{"hey", "hi"}
-		got, err := FetchRepos(server.URL, "token")
+		got, err := client.FetchRepos()
 
 		if err != nil {
 			t.Fatal(err)
