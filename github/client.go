@@ -13,15 +13,30 @@ import (
 //   -H "X-GitHub-Api-Version: 2022-11-28" \
 //   https://api.github.com/orgs/ORG/repos
 
-type SearchRepoResponse struct {
+type SearchResponse struct {
 	TotalCount int `json:"total_count"`
-	Items      []SearchRepoResponseItem
+}
+
+type SearchRepoResponse struct {
+	SearchResponse
+	Items []SearchRepoResponseItem `json:"items"`
 }
 
 type SearchRepoResponseItem struct {
 	Id     int    `json:"id"`
 	NodeId string `json:"node_id"`
 	Name   string `json:"name"`
+}
+
+// can I use generics?
+type SearchPullRequestResponse struct {
+	SearchResponse
+	Items []SearchPullRequestResponseItem `json:"items"`
+}
+
+type SearchPullRequestResponseItem struct {
+	Title  string `json:"title"`
+	Number int    `json:"number"`
 }
 
 type GithubClient struct {
@@ -69,6 +84,12 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 	return repoNames, nil
 }
 
-func (c GithubClient) FetchContributions(user string) error {
-	return nil
+func (c GithubClient) FetchContributions(user, sinceDate string) ([]SearchPullRequestResponseItem, error) {
+  path := fmt.Sprintf("/search/issues?q=is:pr+repo:shipt/segway-next+author:%s+created:>%s", user, sinceDate)
+	searchResponse := &SearchPullRequestResponse{}
+	if err := c.fetch(path, http.MethodGet, searchResponse); err != nil {
+		return nil, err
+	}
+	fmt.Printf("Total Count: %d\n", searchResponse.TotalCount)
+	return searchResponse.Items, nil
 }
