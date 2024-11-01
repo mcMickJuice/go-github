@@ -1,0 +1,15 @@
+{
+  "total_count": 2,
+  "items": [
+    {
+      "id": 1,
+      "name": "hey",
+      "node_id": "nodeId"
+    },
+    {
+      "id": 2,
+      "name": "hi",
+      "node_id": "nodeId"
+    }
+  ]
+}

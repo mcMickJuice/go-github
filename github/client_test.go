@@ -1,26 +1,30 @@
 package github
 
 import (
+	_ "embed"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
 )
 
+//go:embed testdata/search_repo.json
+var searchRepoJson string
+
 func TestClient(t *testing.T) {
-	repoPath := "/orgs/shipt/repos"
+	repoPath := "/search/repositories"
 	t.Run("FetchRepos returns list of repo names", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != repoPath {
 				t.Errorf("Expected path %s, Got path %s", repoPath, r.URL.Path)
 			}
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`[{"id": 1, "name": "hey"},{"id": 2,"name": "hi"}]`))
+			w.Write([]byte(searchRepoJson))
 		}))
 		defer server.Close()
 
 		want := []string{"hey", "hi"}
-		got, err := FetchRepos(server.URL)
+		got, err := FetchRepos(server.URL, "token")
 
 		if err != nil {
 			t.Fatal(err)
