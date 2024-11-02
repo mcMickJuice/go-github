@@ -1,6 +1,7 @@
 package github
 
 import (
+	"embed"
 	_ "embed"
 	"net/http"
 	"net/http/httptest"
@@ -9,8 +10,8 @@ import (
 	"testing"
 )
 
-//go:embed testdata/search_repo.json
-var searchRepoJson string
+//go:embed testdata/*
+var testDataFs embed.FS
 
 func TestClient(t *testing.T) {
 	repoPath := "/search/repositories"
@@ -31,8 +32,9 @@ func TestClient(t *testing.T) {
 			if authHeader := r.Header.Get("Authorization"); authHeader != "Bearer token" {
 				t.Errorf("Expected Header: %q, got %q", "Bearer token", authHeader)
 			}
+      searchRepoJson, _ := testDataFs.ReadFile("testdata/search_repo.json")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(searchRepoJson))
+			w.Write(searchRepoJson)
 		}))
 		defer server.Close()
 

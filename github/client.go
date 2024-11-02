@@ -34,7 +34,11 @@ func NewGithubClient(token, baseUrl string) GithubClient {
 
 func (c GithubClient) fetch(path string, method string, data interface{}) error {
 	url := fmt.Sprintf("%s%s", c.baseUrl, path)
-	request, _ := http.NewRequest(method, url, nil)
+	// when spaces in request, this is likely causing an error
+	request, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return err
+	}
 	client := &http.Client{}
 	request.Header.Add("X-GitHub-Api-Version", "2022-11-28")
 	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.token))
@@ -83,12 +87,12 @@ func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestRev
 	prPath := fmt.Sprintf("/search/issues?per_page=100&q=is:pr+repo:shipt/segway-next+author:%s+created:>%s", user, sinceDate)
 	prSearchResponse := &SearchResponse[SearchPullRequestResponseItem]{}
 
-  // this looks to be pulled in PRs where I leave comments...
-  reviewPath := fmt.Sprintf("/search/issues?per_page=100&q=is:pr+repo:shipt/segway-next+reviewed-by:%s+-author:%s+created:>%s", user, user, sinceDate)
+	// this looks to be pulled in PRs where I leave comments...
+	reviewPath := fmt.Sprintf("/search/issues?per_page=100&q=is:pr+repo:shipt/segway-next+reviewed-by:%s+-author:%s+created:>%s", user, user, sinceDate)
 	reviewSearchResponse := &SearchResponse[SearchPullRequestResponseItem]{}
 
 	overview := PullRequestReviewOverview{}
-  // parallelize this
+	// parallelize this
 	if err := c.fetch(prPath, http.MethodGet, prSearchResponse); err != nil {
 		return overview, err
 	}
