@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"testing"
 )
@@ -19,6 +20,14 @@ func TestClient(t *testing.T) {
 				t.Errorf("Expected path %s, Got path %s", repoPath, r.URL.Path)
 			}
 
+			wantQuery := url.Values{
+        "q": {"org:shipt segway in:name"},
+        "per_page": {"30"},
+      }
+			if gotQuery := r.URL.Query(); !reflect.DeepEqual(gotQuery, wantQuery) {
+				t.Errorf("Expected query %s, Got query %s", wantQuery, gotQuery)
+			}
+
 			if authHeader := r.Header.Get("Authorization"); authHeader != "Bearer token" {
 				t.Errorf("Expected Header: %q, got %q", "Bearer token", authHeader)
 			}
@@ -27,7 +36,7 @@ func TestClient(t *testing.T) {
 		}))
 		defer server.Close()
 
-    client := NewGithubClient("token", server.URL)
+		client := NewGithubClient("token", server.URL)
 		want := []string{"hey", "hi"}
 		got, err := client.FetchRepos()
 
