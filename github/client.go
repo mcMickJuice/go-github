@@ -56,7 +56,6 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 	if err := c.fetch(path, http.MethodGet, repoResponse); err != nil {
 		return nil, err
 	}
-	fmt.Printf("Total Count: %d\n", repoResponse.TotalCount)
 	var repoNames []string
 	for _, repo := range repoResponse.Items {
 		repoNames = append(repoNames, repo.Name)
