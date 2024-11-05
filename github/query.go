@@ -19,7 +19,7 @@ func (q *GithubSearchQuery) Build() string {
 	return strings.ReplaceAll(j, " ", "+")
 }
 
-func (q *GithubSearchQuery) String() string {
+func (q GithubSearchQuery) String() string {
 	return q.Build()
 }
 

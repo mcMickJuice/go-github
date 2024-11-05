@@ -50,7 +50,7 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 		OrgQuery{"shipt"},
 		RepoNameQuery{"segway"},
 	}}
-	path := fmt.Sprintf("/search/repositories?%s&per_page=30", query.String())
+	path := fmt.Sprintf("/search/repositories?%s&per_page=30", query)
 	repoResponse := &searchResponse[searchRepoResponseItem]{}
 
 	if err := c.fetch(path, http.MethodGet, repoResponse); err != nil {
@@ -71,7 +71,7 @@ func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestRev
 		PrInteractionQuery{isAuthor: true, userName: user},
 		CreatedAfterQuery{sinceDate},
 	}}
-	prPath := fmt.Sprintf("/search/issues?per_page=100&%s", prQuery.String())
+	prPath := fmt.Sprintf("/search/issues?per_page=100&%s", prQuery)
 	prSearchResponse := &searchResponse[searchPullRequestResponseItem]{}
 
 	// this looks to be pulled in PRs where I leave comments...
@@ -82,7 +82,7 @@ func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestRev
 		PrInteractionQuery{isAuthor: true, negation: true, userName: user},
 		CreatedAfterQuery{sinceDate},
 	}}
-	reviewPath := fmt.Sprintf("/search/issues?per_page=100&%s", reviewQuery.String())
+	reviewPath := fmt.Sprintf("/search/issues?per_page=100&%s", reviewQuery)
 	reviewSearchResponse := &searchResponse[searchPullRequestResponseItem]{}
 
 	overview := PullRequestReviewOverview{}
