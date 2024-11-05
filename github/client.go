@@ -63,15 +63,24 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 }
 
 func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestReviewOverview, error) {
-	prQuery := GithubSearchQuery{}
-	prQ := prQuery.Add(IsPrQuery{}).Add(RepoIssueQuery{org: "shipt", repo: "segway-next"}).Add(PrInteractionQuery{isAuthor: true, userName: user}).Add(CreatedAfterQuery{sinceDate}).Build()
-	prPath := fmt.Sprintf("/search/issues?per_page=100&%s", prQ)
+	prQuery := GithubSearchQuery{terms: []Query{
+		IsPrQuery{},
+		RepoIssueQuery{org: "shipt", repo: "segway-next"},
+		PrInteractionQuery{isAuthor: true, userName: user},
+		CreatedAfterQuery{sinceDate},
+	}}
+	prPath := fmt.Sprintf("/search/issues?per_page=100&%s", prQuery.Build())
 	prSearchResponse := &searchResponse[searchPullRequestResponseItem]{}
 
 	// this looks to be pulled in PRs where I leave comments...
-	reviewQuery := GithubSearchQuery{}
-	reviewQ := reviewQuery.Add(IsPrQuery{}).Add(RepoIssueQuery{org: "shipt", repo: "segway-next"}).Add(PrInteractionQuery{isAuthor: false, userName: user}).Add(PrInteractionQuery{isAuthor: true, negation: true, userName: user}).Add(CreatedAfterQuery{sinceDate}).Build()
-	reviewPath := fmt.Sprintf("/search/issues?per_page=100&%s", reviewQ)
+	reviewQuery := GithubSearchQuery{terms: []Query{
+		IsPrQuery{},
+		RepoIssueQuery{org: "shipt", repo: "segway-next"},
+		PrInteractionQuery{isAuthor: false, userName: user},
+		PrInteractionQuery{isAuthor: true, negation: true, userName: user},
+		CreatedAfterQuery{sinceDate},
+	}}
+	reviewPath := fmt.Sprintf("/search/issues?per_page=100&%s", reviewQuery.Build())
 	reviewSearchResponse := &searchResponse[searchPullRequestResponseItem]{}
 
 	overview := PullRequestReviewOverview{}
