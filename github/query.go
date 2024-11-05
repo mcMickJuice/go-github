@@ -9,7 +9,7 @@ type GithubSearchQuery struct {
 	queryParts []Query
 }
 
-func (q *GithubSearchQuery) Build() string {
+func (q GithubSearchQuery) Build() string {
 	var terms []string
 	for _, term := range q.queryParts {
 		terms = append(terms, term.Build())
