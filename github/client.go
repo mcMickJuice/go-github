@@ -46,9 +46,11 @@ func (c GithubClient) fetch(path string, method string, data interface{}) error 
 
 // fetch all repos available to user
 func (c GithubClient) FetchRepos() ([]string, error) {
-	query := GithubSearchQuery{}
-	q := query.Add(OrgQuery{"shipt"}).Add(RepoNameQuery{"segway"}).Build()
-	path := fmt.Sprintf("/search/repositories?%s&per_page=30", q)
+	query := GithubSearchQuery{terms: []Query{
+		OrgQuery{"shipt"},
+		RepoNameQuery{"segway"},
+	}}
+	path := fmt.Sprintf("/search/repositories?%s&per_page=30", query.Build())
 	repoResponse := &searchResponse[searchRepoResponseItem]{}
 
 	if err := c.fetch(path, http.MethodGet, repoResponse); err != nil {
