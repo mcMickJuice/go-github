@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 type SearchResponse[I any] struct {
@@ -57,9 +58,50 @@ func (c GithubClient) fetch(path string, method string, data interface{}) error 
 	return nil
 }
 
+type GithubSearchQuery struct {
+	terms []Query
+}
+
+func (q *GithubSearchQuery) Build() string {
+  var terms []string
+	for _, term := range q.terms {
+		terms = append(terms, term.Build())
+	}
+
+  j := fmt.Sprintf("q=%s", strings.Join(terms, " " ))
+	return strings.ReplaceAll(j, " ", "+")
+}
+
+func (q *GithubSearchQuery) Add(term Query) *GithubSearchQuery {
+	q.terms = append(q.terms, term)
+	return q
+}
+
+type Query interface {
+	Build() string
+}
+
+type OrgQuery struct {
+	value string
+}
+
+func (q OrgQuery) Build() string {
+	return fmt.Sprintf("org:%s", q.value)
+}
+
+type RepoNameQuery struct {
+	repoName string
+}
+
+func (q RepoNameQuery) Build() string {
+	return fmt.Sprintf("%s in:name", q.repoName)
+}
+
 // fetch all repos available to user
 func (c GithubClient) FetchRepos() ([]string, error) {
-	path := "/search/repositories?q=org:shipt+segway+in:name&per_page=30"
+	query := GithubSearchQuery{}
+	q := query.Add(OrgQuery{"shipt"}).Add(RepoNameQuery{"segway"}).Build()
+	path := fmt.Sprintf("/search/repositories?%s&per_page=30", q)
 	repoResponse := &SearchResponse[SearchRepoResponseItem]{}
 
 	if err := c.fetch(path, http.MethodGet, repoResponse); err != nil {
