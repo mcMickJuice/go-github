@@ -69,7 +69,9 @@ func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestRev
 	prSearchResponse := &searchResponse[searchPullRequestResponseItem]{}
 
 	// this looks to be pulled in PRs where I leave comments...
-	reviewPath := fmt.Sprintf("/search/issues?per_page=100&q=is:pr+repo:shipt/segway-next+reviewed-by:%s+-author:%s+created:>%s", user, user, sinceDate)
+	reviewQuery := GithubSearchQuery{}
+	reviewQ := reviewQuery.Add(IsPrQuery{}).Add(RepoIssueQuery{org: "shipt", repo: "segway-next"}).Add(PrInteractionQuery{isAuthor: false, userName: user}).Add(PrInteractionQuery{isAuthor: true, negation: true, userName: user}).Add(CreatedAfterQuery{sinceDate}).Build()
+	reviewPath := fmt.Sprintf("/search/issues?per_page=100&%s", reviewQ)
 	reviewSearchResponse := &searchResponse[searchPullRequestResponseItem]{}
 
 	overview := PullRequestReviewOverview{}
