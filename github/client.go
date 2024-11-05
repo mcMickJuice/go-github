@@ -2,6 +2,7 @@ package github
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -45,15 +46,18 @@ func (c GithubClient) fetch(path string, method string, data interface{}) error 
 	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	resp, err := client.Do(request)
 	defer resp.Body.Close()
-	if err != nil || resp.StatusCode != 200 {
+	if err != nil {
 		return err
+	}
+	if resp.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("fetch Error: StatusCode %d, url %s", resp.StatusCode, url))
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 	if err := json.Unmarshal(body, &data); err != nil {
-		return nil
+		return err
 	}
 	return nil
 }
@@ -63,12 +67,12 @@ type GithubSearchQuery struct {
 }
 
 func (q *GithubSearchQuery) Build() string {
-  var terms []string
+	var terms []string
 	for _, term := range q.terms {
 		terms = append(terms, term.Build())
 	}
 
-  j := fmt.Sprintf("q=%s", strings.Join(terms, " " ))
+	j := fmt.Sprintf("q=%s", strings.Join(terms, " "))
 	return strings.ReplaceAll(j, " ", "+")
 }
 
@@ -113,16 +117,6 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 		repoNames = append(repoNames, repo.Name)
 	}
 	return repoNames, nil
-}
-
-type PullRequestResult struct {
-	Title string
-	Date  string
-}
-
-type PullRequestReviewOverview struct {
-	PullRequests []PullRequestResult
-	Reviews      []PullRequestResult
 }
 
 func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestReviewOverview, error) {
