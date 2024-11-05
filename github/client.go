@@ -46,7 +46,7 @@ func (c GithubClient) fetch(path string, method string, data interface{}) error 
 
 // fetch all repos available to user
 func (c GithubClient) FetchRepos() ([]string, error) {
-	query := GithubSearchQuery{terms: []Query{
+	query := GithubSearchQuery{queryParts: []Query{
 		OrgQuery{"shipt"},
 		RepoNameQuery{"segway"},
 	}}
@@ -65,7 +65,7 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 }
 
 func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestReviewOverview, error) {
-	prQuery := GithubSearchQuery{terms: []Query{
+	prQuery := GithubSearchQuery{queryParts: []Query{
 		IsPrQuery{},
 		RepoIssueQuery{org: "shipt", repo: "segway-next"},
 		PrInteractionQuery{isAuthor: true, userName: user},
@@ -75,7 +75,7 @@ func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestRev
 	prSearchResponse := &searchResponse[searchPullRequestResponseItem]{}
 
 	// this looks to be pulled in PRs where I leave comments...
-	reviewQuery := GithubSearchQuery{terms: []Query{
+	reviewQuery := GithubSearchQuery{queryParts: []Query{
 		IsPrQuery{},
 		RepoIssueQuery{org: "shipt", repo: "segway-next"},
 		PrInteractionQuery{isAuthor: false, userName: user},

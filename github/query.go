@@ -6,12 +6,12 @@ import (
 )
 
 type GithubSearchQuery struct {
-	terms []Query
+	queryParts []Query
 }
 
 func (q *GithubSearchQuery) Build() string {
 	var terms []string
-	for _, term := range q.terms {
+	for _, term := range q.queryParts {
 		terms = append(terms, term.Build())
 	}
 
@@ -19,9 +19,8 @@ func (q *GithubSearchQuery) Build() string {
 	return strings.ReplaceAll(j, " ", "+")
 }
 
-func (q *GithubSearchQuery) Add(term Query) *GithubSearchQuery {
-	q.terms = append(q.terms, term)
-	return q
+func (q *GithubSearchQuery) String() string {
+	return q.Build()
 }
 
 type Query interface {
