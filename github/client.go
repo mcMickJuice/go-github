@@ -44,7 +44,6 @@ func (c GithubClient) fetch(path string, method string, data interface{}) error 
 	return nil
 }
 
-
 // fetch all repos available to user
 func (c GithubClient) FetchRepos() ([]string, error) {
 	query := GithubSearchQuery{}
@@ -64,7 +63,9 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 }
 
 func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestReviewOverview, error) {
-	prPath := fmt.Sprintf("/search/issues?per_page=100&q=is:pr+repo:shipt/segway-next+author:%s+created:>%s", user, sinceDate)
+	prQuery := GithubSearchQuery{}
+	prQ := prQuery.Add(IsPrQuery{}).Add(RepoIssueQuery{org: "shipt", repo: "segway-next"}).Add(PrInteractionQuery{isAuthor: true, userName: user}).Add(CreatedAfterQuery{sinceDate}).Build()
+	prPath := fmt.Sprintf("/search/issues?per_page=100&%s", prQ)
 	prSearchResponse := &searchResponse[searchPullRequestResponseItem]{}
 
 	// this looks to be pulled in PRs where I leave comments...
