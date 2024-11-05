@@ -6,25 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 )
-
-type SearchResponse[I any] struct {
-	TotalCount int `json:"total_count"`
-	Items      []I `json:"items"`
-}
-
-type SearchRepoResponseItem struct {
-	Id     int    `json:"id"`
-	NodeId string `json:"node_id"`
-	Name   string `json:"name"`
-}
-
-type SearchPullRequestResponseItem struct {
-	Title     string `json:"title"`
-	Number    int    `json:"number"`
-	CreatedAt string `json:"created_at"`
-}
 
 type GithubClient struct {
 	token, baseUrl string
@@ -62,51 +44,13 @@ func (c GithubClient) fetch(path string, method string, data interface{}) error 
 	return nil
 }
 
-type GithubSearchQuery struct {
-	terms []Query
-}
-
-func (q *GithubSearchQuery) Build() string {
-	var terms []string
-	for _, term := range q.terms {
-		terms = append(terms, term.Build())
-	}
-
-	j := fmt.Sprintf("q=%s", strings.Join(terms, " "))
-	return strings.ReplaceAll(j, " ", "+")
-}
-
-func (q *GithubSearchQuery) Add(term Query) *GithubSearchQuery {
-	q.terms = append(q.terms, term)
-	return q
-}
-
-type Query interface {
-	Build() string
-}
-
-type OrgQuery struct {
-	value string
-}
-
-func (q OrgQuery) Build() string {
-	return fmt.Sprintf("org:%s", q.value)
-}
-
-type RepoNameQuery struct {
-	repoName string
-}
-
-func (q RepoNameQuery) Build() string {
-	return fmt.Sprintf("%s in:name", q.repoName)
-}
 
 // fetch all repos available to user
 func (c GithubClient) FetchRepos() ([]string, error) {
 	query := GithubSearchQuery{}
 	q := query.Add(OrgQuery{"shipt"}).Add(RepoNameQuery{"segway"}).Build()
 	path := fmt.Sprintf("/search/repositories?%s&per_page=30", q)
-	repoResponse := &SearchResponse[SearchRepoResponseItem]{}
+	repoResponse := &searchResponse[searchRepoResponseItem]{}
 
 	if err := c.fetch(path, http.MethodGet, repoResponse); err != nil {
 		return nil, err
@@ -121,11 +65,11 @@ func (c GithubClient) FetchRepos() ([]string, error) {
 
 func (c GithubClient) FetchContributions(user, sinceDate string) (PullRequestReviewOverview, error) {
 	prPath := fmt.Sprintf("/search/issues?per_page=100&q=is:pr+repo:shipt/segway-next+author:%s+created:>%s", user, sinceDate)
-	prSearchResponse := &SearchResponse[SearchPullRequestResponseItem]{}
+	prSearchResponse := &searchResponse[searchPullRequestResponseItem]{}
 
 	// this looks to be pulled in PRs where I leave comments...
 	reviewPath := fmt.Sprintf("/search/issues?per_page=100&q=is:pr+repo:shipt/segway-next+reviewed-by:%s+-author:%s+created:>%s", user, user, sinceDate)
-	reviewSearchResponse := &SearchResponse[SearchPullRequestResponseItem]{}
+	reviewSearchResponse := &searchResponse[searchPullRequestResponseItem]{}
 
 	overview := PullRequestReviewOverview{}
 	// parallelize this
